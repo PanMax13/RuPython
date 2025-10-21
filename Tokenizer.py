@@ -43,18 +43,63 @@ class Tokenizer:
             self.advance()
 
     
-    # def tokenize(self):
-    #     while self.current_char is not None:
-    #         if self.current_char.isspace():
-    #             self.skip_whitespaces()
-    #             continue
-    #
-    #         # если всречается сивмол или _ - то это идентификатор переменной
-    #         if self.current_char.isalpha() or self.current_char == '_':
-    #             id_value = self.identifier()
-    #
-    #             if id_value == 'плюс':
-    #                 self.tokens.append(Token('PLUS'))
-    #             elif id_value = 'минус':
-    #                 self.tokens.append(Token('MINUS'))
-    #             elif id_value = ''
+    def tokenize(self):
+        while self.current_char is not None:
+            if self.current_char.isspace():
+                self.skip_whitespaces()
+                continue
+
+            # если всречается сивмол или _ - то это идентификатор переменной
+            if self.current_char.isalpha() or self.current_char == '_':
+                id_value = self.identifier()
+
+                if id_value == 'плюс':
+                    self.tokens.append(Token('PLUS'))
+                elif id_value == 'минус':
+                    self.tokens.append(Token('MINUS'))
+                elif id_value == 'умножить':
+                    self.tokens.append(Token("MULTIPLY"))
+                elif id_value == 'делить':
+                    self.tokens.append(Token("DEVIDE"))
+                
+                elif id_value == 'равно':
+                    self.tokens.append(Token("EQUALS"))
+                
+                elif id_value == 'больше':
+                    self.tokens.append(Token("GREATER"))
+                elif id_value == 'меньше':
+                    self.tokens.append(Token("LESS"))
+                elif id_value == 'и':
+                    self.tokens.append(Token('AND'))
+                elif id_value == 'или':
+                    self.tokens.append(Token("OR"))
+                elif id_value == 'не':
+                    self.tokens.append(Token('NOT'))
+                else: 
+                    self.tokens.append(Token("IDENTIFIER", id_value))
+                
+                continue
+
+
+            if self.current_char == '=':
+                self.tokens.append(Token('ASSIGN'))
+                self.advance()
+            elif self.current_char == '(':
+                self.tokens.append(Token('LPAREN'))
+                self.advance()
+            elif self.current_char == ')':
+                self.tokens.append(Token('RPAREN'))
+                self.advance()
+            elif self.current_char == '{':
+                self.tokens.append(Token('LBRACE'))
+                self.advance()
+            elif self.current_char == '}':
+                self.tokens.append(Token('RBRACE'))
+                self.advance()
+            elif self.current_char == ',':
+                self.tokens.append(Token('COMMA'))
+                self.advance()
+            else:
+                raise Exception(f"Неизвестный символ: {self.current_char}")
+
+        return self.tokens       
