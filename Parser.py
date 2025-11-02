@@ -18,7 +18,7 @@ class BinaryOperation(AST):
     """
     def __init__(self, left, op, right):
         self.left = left
-        self.operation = op
+        self.op = op
         self.right = right
 
 class Numbers(AST):
@@ -67,7 +67,7 @@ class Parser:
 
     def __init__(self, tokens):
         # инициализация парсера. Аргументы: список токенов, полученных от парсера
-        self.tokes = tokens
+        self.tokens = tokens
         self.current_token = self.tokens[0] if self.tokens else None
         self.position = 0
 
@@ -134,7 +134,7 @@ class Parser:
 
         return node
 
-    def comparision(self):
+    def comparison(self):
         """
         Обрабатывает операции сравнения
         """
@@ -187,14 +187,14 @@ class Parser:
         if self.current_token.type == 'PRINT':
             self.eat("PRINT")
         
-            return Print(self.comparision())
+            return Print(self.comparison())
 
         elif self.current_token.type == 'IDENTIFIER':
             left = Variable(self.current_token)
             self.eat('IDENTIFIER')
             self.eat('ASSIGN')
 
-            right = self.comparision()
+            right = self.comparison()
 
             return Assign(left, right)
         
@@ -209,5 +209,7 @@ class Parser:
 
         nodes = []
 
-        while self.current_token is None:
+        while self.current_token is not None:
             nodes.append(self.statement())
+
+        return nodes

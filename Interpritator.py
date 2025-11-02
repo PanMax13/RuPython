@@ -2,9 +2,6 @@
 Интерпритатор
 """
 
-from turtle import right
-
-
 class Interpreter:
     """
     Интерпритатор для выполенния программ представленных в AST.
@@ -107,7 +104,7 @@ class Interpreter:
         return result
 
 
-    def visit_Num(self, node):
+    def visit_Numbers(self, node):
         """
         Обрабатывает числовые литералы
         """
