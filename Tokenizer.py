@@ -25,6 +25,10 @@ class Tokenizer:
         while self.current_char is not None and self.current_char.isspace():
             self.advance()
 
+    def skip_comment(self):
+        while self.current_char is not None and self.current_char != '\n':
+            self.advance()
+
     # если встречаем цифру записываем ее в result, сдвигаем элемент вправои и выводим число или 
     # float, если текущий символ . 
     def number(self):
@@ -48,6 +52,10 @@ class Tokenizer:
         while self.current_char is not None:
             if self.current_char.isspace():
                 self.skip_whitespaces()
+                continue
+
+            if self.current_char == '#':
+                self.skip_comment()
                 continue
 
             # если всречается сивмол или _ - то это идентификатор переменной

@@ -103,6 +103,29 @@ class Interpreter:
     
         return result
 
+    def visit_LogicalOperation(self, node):
+        """
+        Выполняет логические операции.
+        """
+
+        if node.op.type == 'AND':
+            return bool(self.visit(node.left)) and bool(self.visit(node.right))
+
+        if node.op.type == 'OR':
+            return bool(self.visit(node.left)) or bool(self.visit(node.right))
+
+        raise Exception(f'Неизвестный логический оператор {node.op.type}')
+
+    def visit_UnaryOperation(self, node):
+        """
+        Выполняет унарные операции.
+        """
+
+        if node.op.type == 'NOT':
+            return not bool(self.visit(node.expr))
+
+        raise Exception(f'Неизвестный унарный оператор {node.op.type}')
+
 
     def visit_Numbers(self, node):
         """

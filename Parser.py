@@ -58,6 +58,19 @@ class Compare(AST):
         self.op = op
         self.right = right
 
+class LogicalOperation(AST):
+    # узел для логических операций "и" / "или"
+    def __init__(self, left, op, right):
+        self.left = left
+        self.op = op
+        self.right = right
+
+class UnaryOperation(AST):
+    # узел для унарных операций, например "не"
+    def __init__(self, op, expression):
+        self.op = op
+        self.expr = expression
+
 class Parser:
     """
     Парер использует метод рекурсивного спуска, когда каждое выражение обрабатывается отдельным методом, 
@@ -79,8 +92,9 @@ class Parser:
             self.position += 1
             self.current_token = self.tokens[self.position] if self.position < len(self.tokens) else None
 
-        else: 
-            raise Exception(f"Error: {token_type} is waited, {self.token_type.type} is gotten")
+        else:
+            gotten = self.current_token.type if self.current_token else 'EOF'
+            raise Exception(f"Ожидался токен {token_type}, получен {gotten}")
 
 
     def factor(self):
@@ -91,6 +105,9 @@ class Parser:
         """
         # получаем текущий токен
         token = self.current_token
+
+        if token is None:
+            raise Exception("Ожидалось выражение, получен конец файла")
 
         # если токен - число, здаем узел Numbers(число)
         if token.type == 'NUMBER':
@@ -103,7 +120,7 @@ class Parser:
         
         elif token.type == 'LPAREN':
             self.eat('LPAREN')
-            node = self.expr() # получаем значение между скобками
+            node = self.logical_or() # получаем значение между скобками
             self.eat('RPAREN')
             return node
 
@@ -124,13 +141,55 @@ class Parser:
         while self.current_token and self.current_token.type in ("MULTIPLY", "DIVIDE"):
             token = self.current_token
             
-            if token.type in ("MULTIPLY"):
+            if token.type == "MULTIPLY":
                 self.eat(token.type)
             elif token.type == 'DIVIDE':
                 self.eat('DIVIDE')
             
             right_node = self.factor() # разбираем второй операнд
-            node = BinaryOperation(left=node, operation = token, right=right_node)
+            node = BinaryOperation(left=node, op=token, right=right_node)
+
+        return node
+
+    def logical_not(self):
+        """
+        Обрабатывает логическое отрицание.
+        """
+
+        if self.current_token and self.current_token.type == 'NOT':
+            token = self.current_token
+            self.eat('NOT')
+            return UnaryOperation(op=token, expression=self.logical_not())
+
+        return self.comparison()
+
+    def logical_and(self):
+        """
+        Обрабатывает логическое И.
+        """
+
+        node = self.logical_not()
+
+        while self.current_token and self.current_token.type == 'AND':
+            token = self.current_token
+            self.eat('AND')
+            right_node = self.logical_not()
+            node = LogicalOperation(left=node, op=token, right=right_node)
+
+        return node
+
+    def logical_or(self):
+        """
+        Обрабатывает логическое ИЛИ.
+        """
+
+        node = self.logical_and()
+
+        while self.current_token and self.current_token.type == 'OR':
+            token = self.current_token
+            self.eat('OR')
+            right_node = self.logical_and()
+            node = LogicalOperation(left=node, op=token, right=right_node)
 
         return node
 
@@ -187,14 +246,14 @@ class Parser:
         if self.current_token.type == 'PRINT':
             self.eat("PRINT")
         
-            return Print(self.comparison())
+            return Print(self.logical_or())
 
         elif self.current_token.type == 'IDENTIFIER':
             left = Variable(self.current_token)
             self.eat('IDENTIFIER')
             self.eat('ASSIGN')
 
-            right = self.comparison()
+            right = self.logical_or()
 
             return Assign(left, right)
         
